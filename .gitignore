@@ -3,3 +3,4 @@
 .idea/*
 __pycache__/*
 accounts.txt
+.env

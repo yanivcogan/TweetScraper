@@ -1,4 +1,5 @@
 import subprocess
+from typing import Optional
 
 
 def has_uncommitted_changes():
@@ -35,7 +36,7 @@ def has_uncommitted_changes():
         return True
 
 
-def get_current_commit_id():
+def get_current_commit_id() -> Optional[str]:
     """Get the commit ID of the current HEAD."""
     try:
         result = subprocess.run(
