@@ -1,0 +1,4 @@
+in order to log new accounts, use:
+twscrape add_accounts ./accounts.txt username:password:email:_:_
+while accounts.txt has a list of triplets of
+username:password:email
