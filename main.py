@@ -8,7 +8,8 @@ from git_helper import has_uncommitted_changes, get_current_commit_id
 
 async def main():
     if has_uncommitted_changes():
-        response = input("You have uncommitted changes. Are you sure you want to proceed? (yes/no): ").strip().lower()
+        response = (input("You have may have uncommitted changes. Are you sure you want to proceed? (yes/no): ")
+                    .strip().lower())
         if response not in {"yes", "y"}:
             print("Exiting...")
             return

@@ -32,7 +32,7 @@ def has_uncommitted_changes():
         return False
     except FileNotFoundError:
         print("Git is not installed or not available in the PATH.")
-        return False
+        return True
 
 
 def get_current_commit_id():

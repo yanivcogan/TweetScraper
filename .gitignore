@@ -1,4 +1,5 @@
 /accounts.db
 .venv/*
 .idea/*
+__pycache__/*
 accounts.txt
