@@ -54,12 +54,24 @@ async def fetch_user_tweets(api: API, username: str, commit_id: Optional[str]) \
         user_id = user.id
         print(f"Found user {username}, their id is: {user_id}")
         # fetch user's tweets and replies
-        fetch_method = "user_tweets_and_replies"
+        fetch_method = "search since:2023-10-06 include:nativeretweets"
         print(f"Running {fetch_method} on: {user_id}")
         fetch_started = datetime.now(timezone.utc)
-        user_tweets_and_replies = await gather(api.user_tweets_and_replies(user_id, limit=10))
+        tweets = []
+        oldest_tweet_date = None
+        while True:
+            until_date = (oldest_tweet_date or datetime.now()).strftime("%Y-%m-%d")
+            search_query = f"from:{username} since:2023-10-06 until:{until_date} include:nativeretweets"
+            tweets_batch = await gather(
+                api.search(search_query)
+            )
+            if len(tweets_batch) == 0:
+                break
+            oldest_tweet_date = tweets_batch[len(tweets_batch) - 1].date
+            tweets.extend(tweets_batch)
+            if datetime.date(oldest_tweet_date) < date(2023, 10, 6):
+                break
         fetch_ended = datetime.now(timezone.utc)
-        oldest_tweet_date = user_tweets_and_replies[len(user_tweets_and_replies) - 1].date
         fetch_job_info = {
             "started_at": fetch_started,
             "ended_at": fetch_ended,
@@ -67,7 +79,7 @@ async def fetch_user_tweets(api: API, username: str, commit_id: Optional[str]) \
             "fetch_method": fetch_method,
             "covering_from": oldest_tweet_date,
             "covering_to": fetch_started,
-            "tweet_count": len(user_tweets_and_replies),
+            "tweet_count": len(tweets),
             "commit_id": commit_id
         }
         fetch_job_id = execute_query(
@@ -96,7 +108,7 @@ async def fetch_user_tweets(api: API, username: str, commit_id: Optional[str]) \
                     default=str
                 ).encode('utf-8')).hexdigest()
             }
-            for t in user_tweets_and_replies if datetime.date(t.date) > date(2023, 10, 6)
+            for t in tweets if datetime.date(t.date) > date(2023, 10, 6)
         ]
 
         batch_size = 100
@@ -113,11 +125,8 @@ async def fetch_user_tweets(api: API, username: str, commit_id: Optional[str]) \
                      f"{', '.join(row_values)}"
                      f"ON DUPLICATE KEY UPDATE id = id")
             execute_query(query, args, return_type="none")
-
-        if datetime.date(oldest_tweet_date) < date(2023, 10, 6):
-            return "done"
-        else:
-            return "partial"
+            
+        return "done"
     except Exception as e:
         print(f"Error fetching user {username}: {e}")
         return "error"
