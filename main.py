@@ -125,7 +125,7 @@ async def fetch_user_tweets(api: API, username: str, commit_id: Optional[str]) \
                      f"{', '.join(row_values)}"
                      f"ON DUPLICATE KEY UPDATE id = id")
             execute_query(query, args, return_type="none")
-            
+
         return "done"
     except Exception as e:
         print(f"Error fetching user {username}: {e}")
